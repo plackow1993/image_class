@@ -17,7 +17,7 @@ for filename in glob.glob('*.txt'):
 
 
 
-
+    print(lines[1])
     ####### Loading in reference sequence
     #National Center for Biotechnology Information
     #National Library of Medicine
@@ -35,124 +35,66 @@ for filename in glob.glob('*.txt'):
         input = ['A', 'T', 'C', 'G']
         y = input.index(A)
         return y
-    ref_seq = np.ndarray(shape = (230,130), dtype = int)
-
+    
+    act_seq = np.ndarray(shape = (230,130), dtype = int)
+    print(act_seq)
     counter = 0
-    for n in range(0, ref_seq.shape[0]):
-        for m in range(0, ref_seq.shape[1]):
-            ref_seq[n,m] = mapping(lines[counter])#making python file to extract pixel data and recreate image using said data.
+    for n in range(0, act_seq.shape[0]):
+        for m in range(0, act_seq.shape[1]):
+            print(mapping(lines[counter]))
+            act_seq[n,m] = mapping(lines[counter])
+            counter += 1
 
-
-
+    print(act_seq)
     ########################################
 
-    for N in range(1,101):
-        #setting random seed to produce different psuedo images.
-        now = datetime.now()
-        seed = int(now.timestamp())
-        rng = np.random.default_rng(seed)
 
-        rand_seq = np.random.randint(low = 0, high = 4, size = (230,130))
+    #shade is a value that will remain intensity value. Shade = 255 is all white.
+    shade = 255
 
-        #shade is a value that will remain intensity value. Shade = 255 is all white.
-        shade = 255
+    #way to create an array to use in image processing model
+    a = np.random.randint(low=0,high=1, size = (230,520,3))
+    #print(a)
+    #need to come up with a way to selectively change intensity (black to white) for instances of 4 (ATCG) but keep things mostly the same. So randomize for sections of images.
+    #maybe 255*1 for 100% certainty of ATCG and randomize intensities under 200.
+    count = 0
+    counter = 0
 
-        #way to create an array to use in image processing model
-        a = np.random.randint(low=0,high=1, size = (230,520,3))
-        #print(a)
-        #need to come up with a way to selectively change intensity (black to white) for instances of 4 (ATCG) but keep things mostly the same. So randomize for sections of images.
-        #maybe 255*1 for 100% certainty of ATCG and randomize intensities under 200.
-        count = 0
+    ##original version to create random image
+    #for m in a:
+    #    for n in m:
+    #        #on off switch for creation of an image
+    #        if counter % 4 == 0:
+    #            switch = rng.integers(low=0, high=4, size = 1)
+    #        if counter % 4 == switch:
+    #            a[count,counter,:]=np.add([shade, shade, shade],n)
+    #        counter += 1
+    #    count += 1
+    #    counter = 0
+        
+        
+        
+    #new version to create pseudoimage. Create a nxm/4 matrix of sequences, where A=0, T=1, C=2, G=3.
+    for m in a:
+        for n in m:
+            #on off switch for creation of an image
+            counter2 = counter % 4
+            switch = act_seq[count, math.floor(counter/4)]
+            if counter2 == switch:
+                a[count,counter,:]=np.add([shade, shade, shade],n)
+            counter += 1
+        count += 1
         counter = 0
 
-        ##original version to create random image
-        #for m in a:
-        #    for n in m:
-        #        #on off switch for creation of an image
-        #        if counter % 4 == 0:
-        #            switch = rng.integers(low=0, high=4, size = 1)
-        #        if counter % 4 == switch:
-        #            a[count,counter,:]=np.add([shade, shade, shade],n)
-        #        counter += 1
-        #    count += 1
-        #    counter = 0
-            
-            
-            
-        #new version to create pseudoimage. Create a nxm/4 matrix of sequences, where A=0, T=1, C=2, G=3.
-        for m in a:
-            for n in m:
-                #on off switch for creation of an image
-                counter2 = counter % 4
-                switch = rand_seq[count, math.floor(counter/4)]
-                if counter2 == switch:
-                    a[count,counter,:]=np.add([shade, shade, shade],n)
-                counter += 1
-            count += 1
-            counter = 0
 
+    #need to make an artificial image coordinate map into a convertible unit8 format
+    a=a.astype(np.uint8)
 
-        #need to make an artificial image coordinate map into a convertible unit8 format
-        a=a.astype(np.uint8)
+    #way to create image from an array
+    new_image = Image.fromarray(a)
+    #new_image.show()
 
-        #way to create image from an array
-        new_image = Image.fromarray(a)
-        #new_image.show()
+    new_image.save("actual{}_heatmap.png".format(filename))
+    quit()
 
-        new_image.save("actual{}_heatmap.png".format(N))
-
-
-        #setting random seed to produce different psuedo images.
-        now = datetime.now()
-        seed = int(now.timestamp())
-        rng = np.random.default_rng(seed)
-
-        rand_seq = np.random.randint(low = 0, high = 4, size = (230,130))
-
-        #shade is a value that will remain intensity value. Shade = 255 is all white.
-        shade = 255
-
-        #way to create an array to use in image processing model
-        a = np.random.randint(low=0,high=1, size = (230,520,3))
-        #print(a)
-        #need to come up with a way to selectively change intensity (black to white) for instances of 4 (ATCG) but keep things mostly the same. So randomize for sections of images.
-        #maybe 255*1 for 100% certainty of ATCG and randomize intensities under 200.
-        count = 0
-        counter = 0
-
-        ##original version to create random image
-        #for m in a:
-        #    for n in m:
-        #        #on off switch for creation of an image
-        #        if counter % 4 == 0:
-        #            switch = rng.integers(low=0, high=4, size = 1)
-        #        if counter % 4 == switch:
-        #            a[count,counter,:]=np.add([shade, shade, shade],n)
-        #        counter += 1
-        #    count += 1
-        #    counter = 0
-            
-            
-            
-        #new version to create pseudoimage. Create a nxm/4 matrix of sequences, where A=0, T=1, C=2, G=3.
-        for m in a:
-            for n in m:
-                #on off switch for creation of an image
-                counter2 = counter % 4
-                switch = rand_seq[count, math.floor(counter/4)]
-                if counter2 == switch:
-                    a[count,counter,:]=np.add([shade, shade, shade],n)
-                counter += 1
-            count += 1
-            counter = 0
-
-
-        #need to make an artificial image coordinate map into a convertible unit8 format
-        a=a.astype(np.uint8)
-
-        #way to create image from an array
-        new_image = Image.fromarray(a)
-        #new_image.show()
-
-        new_image.save("actual{}_heatmap.png".format(N))
 
